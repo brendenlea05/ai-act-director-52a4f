@@ -1,0 +1,79 @@
+name: Publish LineVerity public static site
+on:
+  push:
+    branches: [lineverity-render-site]
+    paths:
+      - '.github/workflows/publish-lineverity.yml'
+  workflow_dispatch:
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Package production assets only
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/lineverity-public"
+          cp index.html app.js engine.js packet.js brand.css favicon.svg privacy.html terms.html supplier-recovery-kit.html free-invoice-csv-templates.html robots.txt sitemap.xml 404.html "$RUNNER_TEMP/lineverity-public/"
+          cp -R guides templates "$RUNNER_TEMP/lineverity-public/"
+          find "$RUNNER_TEMP/lineverity-public" -type f \( -name '*.html' -o -name '*.xml' -o -name '*.txt' \) -print0 | xargs -0 sed -i 's|https://earnest-sprite-f58253.netlify.app|https://lineverity-invoice-review.deed.page|g'
+          tar -C "$RUNNER_TEMP/lineverity-public" -czf "$RUNNER_TEMP/lineverity.tar.gz" .
+          size=$(stat -c '%s' "$RUNNER_TEMP/lineverity.tar.gz")
+          echo "Site bundle prepared ($size bytes)."
+          test "$size" -lt 4000000
+      - name: Publish website and encrypt site ownership token
+        shell: bash
+        env:
+          SITE_SLUG: lineverity-invoice-review
+        run: |
+          set -euo pipefail
+          umask 077
+          http=$(curl --max-time 80 --silent --show-error --output "$RUNNER_TEMP/publish-response.json" --write-out '%{http_code}' -T "$RUNNER_TEMP/lineverity.tar.gz" -H 'X-Client: ChatGPT-LineVerity' "https://deed.page/v1/sites?slug=$SITE_SLUG")
+          if [[ "$http" != 200 && "$http" != 201 ]]; then
+            echo "Hosting publisher rejected upload; HTTP status $http"
+            python3 -c 'import json,os; p=json.load(open(os.environ["RUNNER_TEMP"]+"/publish-response.json")); print({"error":p.get("error"),"code":p.get("code"),"message":p.get("message")})'
+            exit 1
+          fi
+          python3 - <<'PY'
+          import json, os
+          root=os.environ["RUNNER_TEMP"]
+          data=json.load(open(root+"/publish-response.json",encoding="utf-8"))
+          assert data.get("ok") is True and str(data.get("url","")).startswith("https://lineverity-invoice-review.deed.page/"), "Hosted site URL was not confirmed"
+          tok=data.get("token")
+          assert isinstance(tok,str) and tok.startswith("deed_tok_"), "New site ownership token missing; refusing to overwrite ownership key"
+          with open(root+"/site-token-raw","w",encoding="utf-8") as f: f.write(tok)
+          print("Published public website:",data["url"],"version",data.get("version"),"files",data.get("files"))
+          PY
+          openssl pkeyutl -encrypt -pubin -inkey .github/keys/deed-public.pem -in "$RUNNER_TEMP/site-token-raw" -out "$RUNNER_TEMP/site-token.bin" -pkeyopt rsa_padding_mode:oaep -pkeyopt rsa_oaep_md:sha256
+          mkdir -p .github/hosting
+          base64 -w0 "$RUNNER_TEMP/site-token.bin" > .github/hosting/deed-token.enc.b64
+          printf '\n' >> .github/hosting/deed-token.enc.b64
+          rm -f "$RUNNER_TEMP/site-token-raw" "$RUNNER_TEMP/publish-response.json" "$RUNNER_TEMP/site-token.bin"
+          printf '%s\n' 'https://lineverity-invoice-review.deed.page/' > LIVE_SITE_URL.txt
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add LIVE_SITE_URL.txt .github/hosting/deed-token.enc.b64
+          git commit -m "Record public LineVerity hostname and encrypted hosting recovery token"
+          git push origin HEAD:lineverity-render-site
+      - name: Verify public HTTP response
+        shell: bash
+        run: |
+          set -euo pipefail
+          url='https://lineverity-invoice-review.deed.page/'
+          for i in 1 2 3 4 5; do
+            status=$(curl --max-time 20 -s -o "$RUNNER_TEMP/public-site.html" -w '%{http_code}' "$url" || true)
+            if [[ "$status" == 200 ]] && grep -q 'LineVerity' "$RUNNER_TEMP/public-site.html"; then
+              echo "Public HTTPS homepage verified: $url"
+              exit 0
+            fi
+            echo "Public deployment not yet available (status $status), attempt $i/5"
+            sleep 5
+          done
+          echo 'Could not verify public homepage.' >&2
+          exit 1
