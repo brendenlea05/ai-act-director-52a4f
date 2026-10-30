@@ -19,3 +19,16 @@ jobs:
       - uses: actions/checkout@v4
       - name: Run standard-library-only self-test
         run: python3 experiments/reorder-recovery/reorder_review.py --self-test
+      - name: Verify fictional sample output
+        run: |
+          python3 experiments/reorder-recovery/reorder_review.py experiments/reorder-recovery/sample_orders.csv --as-of 2026-10-29 --output /tmp/reorder_review.csv
+          python3 - <<'PY'
+          import csv
+          with open('/tmp/reorder_review.csv', newline='') as f:
+              rows = {r['account_id']: r for r in csv.DictReader(f)}
+          assert rows['A101']['status'] == 'REVIEW_OVERDUE'
+          assert rows['B202']['status'] == 'INSUFFICIENT_PATTERN'
+          assert rows['C303']['status'] == 'REVIEW_DUE'
+          assert rows['A101']['historical_order_total'] == '3300.00'
+          print('PASS: fictional sample output')
+          PY
