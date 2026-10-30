@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
+<title>Reorder Signals — Distribution Sales Pilot</title>
+<style>
+:root{--ink:#142725;--muted:#61736f;--line:#dce6df;--bg:#f6f8f3;--card:#fff;--accent:#c5f26c;--dark:#15352f}
+*{box-sizing:border-box}body{margin:0;font:15px/1.5 system-ui,-apple-system,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.shell{max-width:1180px;margin:auto;padding:0 28px}.top{padding:20px 0;border-bottom:1px solid var(--line);background:#fff}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:15px}.brand{font-size:21px;font-weight:800;letter-spacing:-.7px}
+.dot{display:inline-block;background:#74b74e;width:12px;height:12px;border-radius:50%;margin-right:9px}
+.pill{border:1px solid var(--line);border-radius:100px;padding:5px 11px;color:var(--muted);font-size:12px}
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:45px;align-items:center;padding:56px 0 40px}
+.eyebrow{font-size:12px;letter-spacing:2px;text-transform:uppercase;font-weight:800;color:#597554}
+h1{font-size:clamp(34px,4.8vw,62px);line-height:1.06;letter-spacing:-2.3px;margin:12px 0 20px;max-width:780px}
+.lede{font-size:18px;color:#4b6159;max-width:660px}.heroaside{padding:25px;background:var(--dark);color:#fff;border-radius:22px}
+.heroaside h2{margin-top:0;font-size:20px}.heroaside p{color:#c5d7ce}.heroaside li{margin:9px 0}.tiny{font-size:12px;color:var(--muted)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:26px;margin-bottom:23px;box-shadow:0 3px 15px #15352f07}
+.card h2{margin:0 0 8px;letter-spacing:-.6px}.desc{color:var(--muted);margin:0 0 17px}.controls{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+button,.filelabel{appearance:none;display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 16px;border-radius:9px;cursor:pointer;font-weight:750;font-size:14px;border:1px solid var(--dark);background:var(--dark);color:white}
+button.secondary,.filelabel{background:white;color:var(--dark);border:1px solid #aabbb2}
+button:disabled{opacity:.5;cursor:not-allowed}button:hover:not(:disabled){filter:brightness(1.07)}input[type=file]{position:absolute;left:-9999px}
+.alert{padding:12px 14px;margin-top:16px;background:#fff4df;border:1px solid #efddad;border-radius:9px;color:#6f4c10;display:none}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:13px;margin:20px 0}.stat{padding:17px;border:1px solid var(--line);border-radius:13px;background:#f8faf7}
+.stat strong{display:block;font-size:29px;letter-spacing:-1px}.stat small{font-size:12px;color:var(--muted)}
+table{width:100%;border-collapse:collapse;text-align:left;font-size:13px}th{color:#5d6f68;font-size:11px;letter-spacing:.8px;text-transform:uppercase;background:#f3f7f1}th,td{padding:14px 12px;border-bottom:1px solid var(--line);vertical-align:top}
+td strong{display:block}td small{color:var(--muted)}.tablewrap{overflow-x:auto}td button{font-size:12px;padding:8px 11px;white-space:nowrap}.overdue{display:inline-block;border-radius:50px;background:#fff1d6;color:#815a11;padding:3px 8px;font-weight:750;font-size:11px}
+.empty{padding:26px;color:var(--muted);text-align:center;background:#f8faf7;border-radius:12px}
+.footer{padding:0 0 45px;color:var(--muted);font-size:12px}.footer b{color:var(--ink)}#results{display:none}
+details{margin-top:14px;color:var(--muted)}summary{cursor:pointer;font-weight:650}
+@media(max-width:850px){.hero{grid-template-columns:1fr;gap:18px;padding:38px 0}.shell{padding:0 16px}.stats{grid-template-columns:1fr 1fr 1fr}.stat strong{font-size:23px}.card{padding:18px}.top .pill{display:none}}
+</style>
+</head>
+<body>
+<header class="top"><div class="shell nav"><div class="brand"><span class="dot"></span>Reorder Signals</div><div class="pill">Independent concept · Working CSV pilot</div></div></header>
+<main class="shell">
+<section class="hero">
+<div><div class="eyebrow">For specialty distributors</div>
+<h1>Your next reorder might already be overdue.</h1>
+<p class="lede">Find repeat customers who haven't reordered on their normal cadence. Start with a CSV export, get a prioritized review list, and prepare personal follow-ups for your sales team.</p>
+<p class="tiny"><b>Early-stage pilot:</b> Browser-only analysis, no ERP integration, no automatic emails, and no AI model connected yet.</p></div>
+<aside class="heroaside"><h2>Built for a simple first test</h2><p>Start with exported order history rather than a costly integration.</p><ul><li>Look for recurring account–product patterns</li><li>Compare current gap to historical cadence</li><li>Review follow-up copy before contacting anyone</li><li>Export an auditable opportunity list</li></ul></aside>
+</section>
+<section class="card" id="upload">
+<h2>Analyze an order history</h2><p class="desc">Upload a CSV with the columns <b>customer, email, order_date, sku, amount</b>. One row per order line; include at least three distinct order dates per account–SKU. Add <b>order_id</b> if available. Date format YYYY-MM-DD.</p>
+<div class="controls"><label class="filelabel" for="file">Choose CSV <input id="file" type="file" accept=".csv,text/csv"></label><button class="secondary" id="sample" type="button">Run synthetic demo</button><button id="export" type="button" disabled>Export review list</button></div>
+<div class="alert" id="alert" role="alert"></div>
+<details><summary>How scores work</summary><p>Signals are generated with transparent statistical rules, not AI predictions: a customer–SKU pair needs 3+ distinct purchase dates, the median interval between those dates becomes its normal cadence, and the latest gap must exceed both 1.35× that cadence and the cadence plus 7 days. This flags possible follow-ups only. Seasonality, contracts, stockouts, cancellations and customer preferences can explain a gap. The system does not estimate incremental revenue or send email.</p></details>
+</section>
+<section class="card" id="results">
+<h2>Sales-team review queue</h2><p class="desc" id="summary">Suggested follow-ups based only on observed history. Human approval required before contact.</p>
+<div class="stats"><div class="stat"><strong id="accounts">0</strong><small>Unique accounts</small></div><div class="stat"><strong id="signals">0</strong><small>Overdue account–product signals</small></div><div class="stat"><strong id="lines">0</strong><small>Valid order lines</small></div></div>
+<div class="tablewrap"><table><thead><tr><th>Account &amp; product</th><th>Last order</th><th>Normal cadence</th><th>Days since order</th><th>Late by</th><th>Average line amount</th><th>Action</th></tr></thead><tbody id="rows"></tbody></table></div>
+<p class="tiny">A signal is not a guaranteed reorder, a revenue forecast, or an attribution claim. Review inventory, contracts, consent/opt-outs, contact relevance and pricing before outreach.</p>
+</section>
+</main>
+<footer class="shell footer"><b>Privacy-first prototype.</b> Your CSV is processed locally in this browser. This page contains no analytics, external API calls, or data-upload functionality. Nothing is stored on a server. This is a test tool, not an operating sales automation service.</footer>
+<script>
+(function(){
+"use strict";
+var signals=[];
+var $=function(id){return document.getElementById(id)};
+var today=new Date();today.setHours(12,0,0,0);
+var DAY=86400000;
+function iso(d){return new Date(d).toISOString().slice(0,10)}
+function dateDaysAgo(n){return iso(today.getTime()-n*DAY)}
+function money(n){return Number(n).toLocaleString("en-US",{style:"currency",currency:"USD",maximumFractionDigits:0})}
+function esc(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})}
+function err(s){$("alert").style.display="block";$("alert").textContent=s}
+function clearErr(){$("alert").style.display="none";$("alert").textContent=""}
+function csvParse(str){
+var out=[],row=[],field="",quoted=false;
+str=str.replace(/^\uFEFF/,"");
+for(var i=0;i<str.length;i++){
+var c=str[i];
+if(quoted){if(c==='"'&&str[i+1]==='"'){field+='"';i++}else if(c==='"'){quoted=false}else{field+=c}}
+else if(c==='"'&&field===""){quoted=true}
+else if(c===","){row.push(field);field=""}
+else if(c==="\n"||c==="\r"){if(c==="\r"&&str[i+1]==="\n")i++;row.push(field);field="";if(row.some(function(v){return v.trim()!==""}))out.push(row);row=[]}
+else field+=c;
+}
+if(quoted)throw Error("CSV has an unclosed quoted field.");
+row.push(field);if(row.some(function(v){return v.trim()!==""}))out.push(row);
+if(out.length<2)throw Error("CSV must contain headers and at least one order.");
+return out;
+}
+function analyze(csv){
+var grid=csvParse(csv),header=grid.shift().map(function(s){return s.trim().toLowerCase()});
+var required=["customer","email","order_date","sku","amount"];
+required.forEach(function(k){if(header.indexOf(k)<0)throw Error("Missing required column: "+k)});
+var ix=function(s){return header.indexOf(s)};
+var groups=new Map(),customers=new Set(),valid=0,invalid=0;
+grid.forEach(function(row){
+var customer=(row[ix("customer")]||"").trim(),sku=(row[ix("sku")]||"").trim(),rawdate=(row[ix("order_date")]||"").trim(),email=(row[ix("email")]||"").trim();
+var n=Number((row[ix("amount")]||"").replace(/[$,\s]/g,""));
+var t=Date.parse(rawdate+"T12:00:00Z");
+if(!customer||!sku||! /^\d{4}-\d\d-\d\d$/.test(rawdate)||!Number.isFinite(t)||iso(t)!==rawdate||t>today.getTime()||!Number.isFinite(n)||n<0){invalid++;return}
+valid++;customers.add(customer.toLowerCase());
+var key=customer.toLowerCase()+"\u0000"+sku.toLowerCase();
+if(!groups.has(key))groups.set(key,{customer:customer,sku:sku,email:email,orders:[]});
+var g=groups.get(key);if(!g.email&&email)g.email=email;
+g.orders.push({t:t,date:rawdate,amount:n,id:ix("order_id")>=0?row[ix("order_id")]:""});
+});
+if(!valid)throw Error("No valid order lines found. Check the date and amount formats.");
+var found=[];
+groups.forEach(function(g){
+var bydate=new Map();
+g.orders.forEach(function(o){
+var key=o.id?o.date+"|"+o.id:o.date;
+if(!bydate.has(key))bydate.set(key,{t:o.t,date:o.date,amount:0});
+bydate.get(key).amount+=o.amount;
+});
+var dates=Array.from(new Set(Array.from(bydate.values()).map(function(o){return o.t}))).sort(function(a,b){return a-b});
+if(dates.length<3)return;
+var diffs=[];for(var i=1;i<dates.length;i++)diffs.push((dates[i]-dates[i-1])/DAY);
+diffs.sort(function(a,b){return a-b});
+var m=diffs.length,median=m%2?diffs[(m-1)/2]:(diffs[m/2-1]+diffs[m/2])/2;
+var gap=(today.getTime()-dates[dates.length-1])/DAY;
+var threshold=Math.max(median*1.35,median+7);
+if(median<1||gap<=threshold)return;
+var lastamounts=Array.from(bydate.values()).sort(function(a,b){return b.t-a.t}).slice(0,3);
+var avg=lastamounts.reduce(function(s,o){return s+o.amount},0)/lastamounts.length;
+found.push({customer:g.customer,sku:g.sku,email:g.email,last:iso(dates[dates.length-1]),median:Math.round(median),gap:Math.floor(gap),late:Math.floor(gap-median),amount:avg,ratio:gap/median});
+});
+found.sort(function(a,b){return b.ratio-a.ratio||b.amount-a.amount});
+return {found:found,accounts:customers.size,valid:valid,invalid:invalid};
+}
+function reviewText(s){
+return "Hi "+s.customer+" team,\n\nChecking whether you need another order of "+s.sku+". If it would help, I can confirm current availability and pricing or prepare a quote.\n\nBest,\n[Sales representative]\n\nREVIEW REQUIRED: Verify this contact is appropriate, check opt-outs and customer-specific arrangements, and edit this message before sending. Do not auto-send.";
+}
+function render(csv){
+clearErr();var result=analyze(csv);signals=result.found;
+$("results").style.display="block";$("accounts").textContent=result.accounts.toLocaleString();$("signals").textContent=signals.length.toLocaleString();$("lines").textContent=result.valid.toLocaleString();
+$("export").disabled=!signals.length;
+$("summary").textContent=signals.length?signals.length+" possible follow-ups, ranked by relative lateness. Review each case before any outreach.":"No overdue patterns met the rule. This is not proof that no customer is at risk.";
+var tbody=$("rows");tbody.innerHTML="";
+if(!signals.length){tbody.innerHTML='<tr><td colspan="7"><div class="empty">No signals found. Try the synthetic demo or check that each account–product pair has three or more historical order dates.</div></td></tr>'}
+signals.forEach(function(s,i){var tr=document.createElement("tr");tr.innerHTML="<td><strong>"+esc(s.customer)+"</strong><small>"+esc(s.sku)+"</small></td><td>"+esc(s.last)+"</td><td>"+s.median+" days</td><td>"+s.gap+" days</td><td><span class='overdue'>"+s.late+" days</span></td><td>"+money(s.amount)+"</td><td><button class='secondary' type='button' data-copy='"+i+"'>Copy draft</button></td>";tbody.appendChild(tr)});
+if(result.invalid)err(result.invalid+" row(s) skipped due to invalid dates, missing identifiers or amounts.");
+}
+function demo(){
+var out=["customer,email,order_date,sku,amount,order_id"];
+var cases=[["Westline Packaging","sales@westline.example","Corrugated Cartons",28,72,450],["Summit Janitorial","office@summit.example","Paper Towels",20,58,210],["Coastal Irrigation","buyer@coastal.example","PVC Elbows",14,14,120],["Meridian Safety","purchasing@meridian.example","Work Gloves",45,120,700],["Triad Supply","orders@triad.example","Stretch Wrap",30,51,350]];
+cases.forEach(function(c,k){for(var n=0;n<4;n++){var when=c[4]+c[3]*n;out.push([c[0],c[1],dateDaysAgo(when),c[2],c[5],"DEMO"+k+"-"+n].join(","))}});
+return out.join("\n")
+}
+$("sample").addEventListener("click",function(){try{render(demo())}catch(e){err(e.message)}});
+$("file").addEventListener("change",async function(ev){
+var f=ev.target.files[0];if(!f)return;
+if(f.size>3*1024*1024){err("CSV too large for this pilot. Use at most 3 MB.");return}
+try{render(await f.text())}catch(e){err("Couldn't analyze CSV: "+e.message)}
+});
+$("rows").addEventListener("click",async function(ev){
+var b=ev.target.closest("button[data-copy]");if(!b)return;
+var s=signals[Number(b.getAttribute("data-copy"))];if(!s)return;
+try{await navigator.clipboard.writeText(reviewText(s));b.textContent="Copied";setTimeout(function(){b.textContent="Copy draft"},1800)}
+catch(e){err("Clipboard unavailable in this browser. Open the page over HTTPS and try again.")}
+});
+$("export").addEventListener("click",function(){
+if(!signals.length)return;
+var keys=["customer","sku","email","last","median","gap","late","amount"];
+var rows=[["Customer","SKU","Email","Last order","Median cadence (days)","Days since last","Days late","Historical average line amount"]];
+signals.forEach(function(s){rows.push(keys.map(function(k){return String(s[k])}))});
+var csv=rows.map(function(row){return row.map(function(s){return '"'+String(s).replace(/"/g,'""')+'"'}).join(",")}).join("\r\n");
+var url=URL.createObjectURL(new Blob([csv],{type:"text/csv;charset=utf-8;"}));var a=document.createElement("a");a.href=url;a.download="reorder-review-"+iso(today)+".csv";a.click();setTimeout(function(){URL.revokeObjectURL(url)},1000);
+});
+})();
+</script>
+</body></html>
