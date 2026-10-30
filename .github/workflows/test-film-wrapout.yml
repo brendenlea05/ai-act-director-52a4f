@@ -1,0 +1,17 @@
+name: Film wrapout offline QA
+on:
+  push:
+    branches: [film-wrapout-pilot]
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run standard-library tests
+        run: |
+          cd experiments/film-wrapout
+          python3 test_wrapout.py
+          python3 wrapout.py sample_receipts.csv --project "Fictional Commercial Shoot" --out-prefix demo
+          test -s demo_numbered.csv
+          test -s demo_cover.html
