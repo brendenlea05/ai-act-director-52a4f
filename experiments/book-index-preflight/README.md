@@ -1,0 +1,7 @@
+# Book index CSV preflight (experimental)
+
+**Not a book-indexing service, not a substitute for a professional indexer or human editorial review.** This is a free, offline, zero-dependency Python check of a **pre-existing** back-of-book index exported to CSV. It checks duplicate headings and locators, basic sort order, malformed/reversed numeric page ranges, unresolved `see`/`see_also` targets, and self-references. It does not create an index, inspect manuscripts, validate page references against the book, handle all publisher styles, or guarantee print readiness. No manuscript or private data is uploaded.
+
+Required CSV header: `term,locators,see,see_also`. Separate multiple page locators and cross-reference targets with semicolons. The `sample_index.csv` is entirely fictional. Run `python3 index_preflight.py sample_index.csv` and `python3 test_index_preflight.py`. All warnings require manual review. No external packages, services, paid API calls, or network requests.
+
+**Commercial hypothesis (unvalidated):** scoped index-file technical preflight as an overflow service for independent book publishers and indexing editors. No paying clients, partnerships, or validated demand for this specific tool. Public examples of paid indexing work include [Clear Indexing](https://clearindexing.com/) and [American Society for Indexing](https://asindexing.org/find-an-indexer/). The script only checks mechanical errors, not conceptual index quality.
