@@ -174,7 +174,7 @@ def self_test():
         raise AssertionError("invalid date accepted")
     except ValueError:
         pass
-    assert read_suppression_csv(io.StringIO("account_id\\nA\\n")) == {"A"}
+    assert read_suppression_csv(io.StringIO("account_id\nA\n")) == {"A"}
     assert "A" not in {r["account_id"] for r in exclude_suppressed(rows, {"A"})}
     print("PASS: cadence, overdue, due, duplicates, suppression, CSV safety, invalid dates")
 
