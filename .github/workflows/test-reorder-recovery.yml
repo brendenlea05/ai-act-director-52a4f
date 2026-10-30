@@ -1,0 +1,21 @@
+name: Reorder recovery prototype self-test
+on:
+  push:
+    branches:
+      - reorder-recovery-pilot
+    paths:
+      - 'experiments/reorder-recovery/**'
+      - '.github/workflows/test-reorder-recovery.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run standard-library-only self-test
+        run: python3 experiments/reorder-recovery/reorder_review.py --self-test
