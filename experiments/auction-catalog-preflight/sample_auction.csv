@@ -1,0 +1,8 @@
+lot,title,image filename,quantity
+101,Walnut side table,101.jpg,1
+102,Brass desk lamp,102.jpg,1
+102,Glass paperweight,103.jpg,1
+104,,104.jpg,1
+105,Decorative mirror,,1
+,Wooden stool,106.jpg,1
+107,"=HYPERLINK(""http://example.invalid"",""test"")",107.jpg,1
