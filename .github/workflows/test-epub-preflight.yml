@@ -1,0 +1,20 @@
+name: EPUB preflight synthetic QA
+on:
+  push:
+    branches: [epub-preflight-pilot]
+    paths:
+      - 'experiments/epub-preflight/**'
+      - '.github/workflows/test-epub-preflight.yml'
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Synthetic clean and broken EPUB checks
+        run: |
+          cd experiments/epub-preflight
+          python test_epub_preflight.py
