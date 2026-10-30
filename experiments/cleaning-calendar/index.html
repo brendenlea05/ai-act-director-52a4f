@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Recurring Cleaning Visits — CSV to Calendar</title>
+<style>
+:root{font:16px system-ui,sans-serif;color:#172338;background:#f5f7fa}body{margin:0}main{max-width:780px;margin:32px auto;padding:24px;background:white;border:1px solid #dbe2e9;border-radius:16px}h1{font-size:1.55rem;margin-top:0}p,li{line-height:1.55}.muted{color:#546173}.actions{display:flex;flex-wrap:wrap;gap:12px;margin:18px 0}button,.file{background:#143e72;color:white;border:0;border-radius:8px;padding:12px 16px;cursor:pointer;font:inherit}button:disabled{opacity:.45;cursor:not-allowed}input[type=file]{display:block;margin:12px 0}pre{white-space:pre-wrap;overflow-wrap:anywhere;background:#f1f5f9;padding:14px;border-radius:8px}#status{font-weight:600}small{display:block;color:#546173}code{background:#edf2f7;padding:2px 4px}table{width:100%;border-collapse:collapse}th,td{text-align:left;padding:8px;border-bottom:1px solid #e5eaf0}@media(max-width:600px){main{margin:0;padding:18px;border:0;border-radius:0}}
+</style></head>
+<body><main>
+<h1>Recurring Cleaning Visits — Calendar Export</h1>
+<p class="muted">Free, experimental offline CSV-to-ICS helper for small cleaning businesses. It generates calendar events, not a CRM. The selected file is processed only in your browser; nothing is uploaded.</p>
+<p>CSV columns: <code>client,next_date,interval_days,start_time,duration_minutes,notes</code>. Date must be YYYY-MM-DD; time HH:MM (24-hour). Set an interval of 7, 14 or 28 days for weekly, biweekly or four-week visits. Each row produces 12 occurrences and a one-day-before alarm request.</p>
+<div class="actions"><button id="sample">Load fictional sample</button><label>Or choose your own CSV<input id="file" type="file" accept=".csv,text/csv"></label></div>
+<p id="status" role="status">No data loaded.</p><div id="preview"></div>
+<div class="actions"><button id="download" disabled>Download calendar (.ics)</button></div>
+<h2>Before importing</h2>
+<ul><li>Start with five non-sensitive clients. Check all dates and times against your real schedule.</li><li>Calendar apps may ignore imported alarms or recurring-event rules. Verify actual reminders in your chosen app.</li><li>Importing the same file twice may create duplicate events. This tool does not synchronize, cancel, or reschedule events.</li><li>Dates are floating local calendar times (not a fixed timezone). Test daylight-saving transitions and travel.</li><li>Keep a backup of your original CSV. Do not put private client details in public repositories or screenshots.</li></ul>
+<p class="muted">Need a one-time custom migration or cleanup of your own consented export? Ask for a scoped fixed-price quote at <a href="mailto:brendenlea05ai@gmail.com?subject=Cleaning%20calendar%20CSV%20setup">brendenlea05ai@gmail.com</a>. No contract or fee is implied by this free sample.</p>
+</main><script>
+"use strict";
+const sample = 'client,next_date,interval_days,start_time,duration_minutes,notes\nFictional Home A,2026-11-02,14,09:00,120,Sample only\nFictional Office B,2026-11-03,7,13:30,90,Sample only\nFictional Condo C,2026-11-06,28,10:00,150,Sample only';
+let rows=[];
+const status=document.getElementById('status'), preview=document.getElementById('preview'), download=document.getElementById('download');
+function csvParse(text){
+  text=text.replace(/^\uFEFF/,'');
+  const out=[];let row=[],cell='',quoted=false,afterQuote=false;
+  for(let i=0;i<text.length;i++){const c=text[i];
+    if(quoted){if(c==='"'){if(text[i+1]==='"'){cell+='"';i++;}else{quoted=false;afterQuote=true;}}else{cell+=c;}continue;}
+    if(afterQuote){if(c===','){row.push(cell);cell='';afterQuote=false;continue;}if(c==='\n'||c==='\r'){row.push(cell);out.push(row);row=[];cell='';afterQuote=false;if(c==='\r'&&text[i+1]==='\n')i++;continue;}if(c===' '||c==='\t')continue;throw Error('Unexpected text after a quoted cell.');}
+    if(c==='"'){if(cell.trim())throw Error('Unexpected quote.');quoted=true;continue;}
+    if(c===','){row.push(cell);cell='';continue;}
+    if(c==='\n'||c==='\r'){row.push(cell);out.push(row);row=[];cell='';if(c==='\r'&&text[i+1]==='\n')i++;continue;}
+    cell+=c;
+  }
+  if(quoted)throw Error('Unclosed quoted CSV field.');
+  if(afterQuote||cell.length||row.length){row.push(cell);out.push(row);}
+  return out.filter(r=>r.some(x=>x.trim()));
+}
+function validDate(s){if(!/^\d{4}-\d{2}-\d{2}$/.test(s))return false;const d=new Date(s+'T12:00:00Z');return !isNaN(d)&&d.toISOString().slice(0,10)===s;}
+function readData(text){
+  if(text.length>1000000)throw Error('File exceeds 1 MB limit.');
+  const data=csvParse(text);if(data.length<2)throw Error('CSV needs a header and at least one row.');
+  if(data.length>5001)throw Error('Maximum 5000 visits.');
+  const expected=['client','next_date','interval_days','start_time','duration_minutes','notes'];
+  const headers=data.shift().map(x=>x.trim().toLowerCase());
+  if(headers.join('|')!==expected.join('|'))throw Error('Use these exact columns in order: '+expected.join(', '));
+  return data.map((r,i)=>{if(r.length!==6)throw Error('Row '+(i+2)+': expected 6 columns.');
+    const [client,date,interval,time,duration,notes]=r.map(x=>x.trim());
+    const n=Number(interval),m=Number(duration);
+    if(!client||client.length>120||notes.length>400||!validDate(date)||!/^(?:[01]\d|2[0-3]):[0-5]\d$/.test(time)||!Number.isInteger(n)||n<1||n>365||!Number.isInteger(m)||m<1||m>1440)throw Error('Row '+(i+2)+': invalid name, date, time, interval or duration.');
+    return {client,date,n,time,m,notes};
+  });
+}
+function esc(s){return s.replace(/\\/g,'\\\\').replace(/\r?\n/g,'\\n').replace(/,/g,'\\,').replace(/;/g,'\\;');}
+function dateTime(date,time){return date.replace(/-/g,'')+'T'+time.replace(':','')+'00';}
+function endTime(r){const [h,m]=r.time.split(':').map(Number);const d=new Date(r.date+'T00:00:00Z');d.setUTCMinutes(h*60+m+r.m);return d.toISOString().slice(0,10).replace(/-/g,'')+'T'+String(d.getUTCHours()).padStart(2,'0')+String(d.getUTCMinutes()).padStart(2,'0')+'00';}
+function calendar(data){
+  const lines=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Offline Cleaning Schedule Pilot//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH'];
+  data.forEach((r,i)=>{lines.push('BEGIN:VEVENT','UID:cleaning-'+i+'-'+r.date.replace(/-/g,'')+'@example.invalid','DTSTAMP:20261030T120000Z','SUMMARY:'+esc('Cleaning: '+r.client),'DTSTART:'+dateTime(r.date,r.time),'DTEND:'+endTime(r),'RRULE:FREQ=DAILY;INTERVAL='+r.n+';COUNT=12','DESCRIPTION:'+esc(r.notes||'Imported from a local CSV. Verify schedule.'),'BEGIN:VALARM','TRIGGER:-P1D','ACTION:DISPLAY','DESCRIPTION:Upcoming cleaning visit','END:VALARM','END:VEVENT');});
+  lines.push('END:VCALENDAR');return lines.join('\r\n')+'\r\n';
+}
+function load(text){try{rows=readData(text);status.textContent=rows.length+' fictional/selected visit series ready. Verify before importing.';preview.textContent=rows.slice(0,5).map(r=>r.client+' — '+r.date+' '+r.time+' (every '+r.n+' days)').join('\n');download.disabled=false;}catch(e){rows=[];download.disabled=true;preview.textContent='';status.textContent='CSV error: '+e.message;}}
+document.getElementById('sample').addEventListener('click',()=>load(sample));
+document.getElementById('file').addEventListener('change',async e=>{const f=e.target.files[0];if(!f)return;if(f.size>1000000){load('');status.textContent='File exceeds 1 MB limit.';return;}load(await f.text());});
+download.addEventListener('click',()=>{if(!rows.length)return;const blob=new Blob([calendar(rows)],{type:'text/calendar;charset=utf-8'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download='cleaning-visits.ics';document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);});
+</script></body></html>
