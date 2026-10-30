@@ -1,0 +1,7 @@
+sku,product_name,category,price
+LAMP-01, LED Desk Lamp ,Lighting,29.9
+MUG-10,Stoneware Mug,Home,12.50
+lamp-01,Desk Lamp Variant,Lighting,29.90
+CUP-09,Coffee Cup,,15.00
+RUG-11,Entry Mat,Home,abc
+SAFE-07,"=HYPERLINK(""http://example.invalid"")",Home,9.50
