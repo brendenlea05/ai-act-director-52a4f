@@ -6,7 +6,7 @@ import io
 import unittest
 from datetime import date
 
-from reorder_review import analyze, parse_orders, safe_csv_value, write_report
+from reorder_review import analyze, parse_orders, safe_csv_value, write_report, read_suppression_csv, exclude_suppressed
 
 
 HEADER = "account_id,account_name,order_id,order_date,order_total\n"
@@ -54,6 +54,22 @@ class ReorderEdgeCases(unittest.TestCase):
     def test_missing_required_header_rejected(self):
         with self.assertRaisesRegex(ValueError, "Required columns"):
             parse_orders(io.StringIO("account_id,order_id\nA,1\n"))
+
+    def test_explicit_do_not_contact_accounts_are_excluded(self):
+        orders = parse_orders(io.StringIO(
+            HEADER + "A,Alpha,1,2026-01-01,100\n"
+            "A,Alpha,2,2026-02-01,100\n"
+            "B,Beta,1,2026-01-01,100\n"
+            "B,Beta,2,2026-02-01,100\n"
+        ))
+        report = analyze(orders, date(2026, 10, 29))
+        suppressed = read_suppression_csv(io.StringIO("account_id\nA\n"))
+        remaining = exclude_suppressed(report, suppressed)
+        self.assertEqual([r["account_id"] for r in remaining], ["B"])
+
+    def test_suppression_csv_rejects_missing_header(self):
+        with self.assertRaisesRegex(ValueError, "account_id header"):
+            read_suppression_csv(io.StringIO("name\nAlpha\n"))
 
     def test_formula_like_text_escaped_in_csv_output(self):
         rows = [{
