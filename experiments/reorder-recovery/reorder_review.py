@@ -111,6 +111,29 @@ def analyze(orders, as_of: date, minimum_orders: int = 2, lag_multiplier: float 
     return sorted(result, key=lambda x: (rank[x["status"]], x["account_id"]))
 
 
+def read_suppression_csv(source):
+    """Read an explicit account-id exclusion list; never infer consent from order history."""
+    reader = csv.DictReader(source)
+    if not reader.fieldnames or "account_id" not in reader.fieldnames:
+        raise ValueError("Suppression CSV requires an account_id header")
+    ids = set()
+    for line, row in enumerate(reader, start=2):
+        if None in row:
+            raise ValueError(f"Suppression row {line}: too many columns")
+        account = (row.get("account_id") or "").strip()
+        if not account:
+            if any(str(v or "").strip() for v in row.values()):
+                raise ValueError(f"Suppression row {line}: missing account_id")
+            continue
+        ids.add(account)
+    return ids
+
+
+def exclude_suppressed(rows, suppressed_ids):
+    """Exclude explicit opt-outs and do-not-contact accounts from the review queue."""
+    return [row for row in rows if row["account_id"] not in suppressed_ids]
+
+
 def safe_csv_value(value):
     """Neutralize Excel formula injection in CSV text fields."""
     s = str(value)
@@ -151,7 +174,9 @@ def self_test():
         raise AssertionError("invalid date accepted")
     except ValueError:
         pass
-    print("PASS: cadence, overdue, due, duplicates, insufficient history, CSV safety, invalid dates")
+    assert read_suppression_csv(io.StringIO("account_id\\nA\\n")) == {"A"}
+    assert "A" not in {r["account_id"] for r in exclude_suppressed(rows, {"A"})}
+    print("PASS: cadence, overdue, due, duplicates, suppression, CSV safety, invalid dates")
 
 
 def main():
@@ -159,6 +184,7 @@ def main():
     parser.add_argument("input_csv", nargs="?", help="Order-history CSV, no customer PII needed")
     parser.add_argument("--as-of", default=date.today().isoformat(), help="YYYY-MM-DD reference date")
     parser.add_argument("--output", default="reorder_review.csv", help="Output CSV path")
+    parser.add_argument("--suppress-csv", help="Optional CSV with account_id column; excluded accounts never appear in output")
     parser.add_argument("--self-test", action="store_true")
     args = parser.parse_args()
     if args.self_test:
@@ -170,6 +196,10 @@ def main():
         as_of = date.fromisoformat(args.as_of)
         with open(args.input_csv, encoding="utf-8-sig", newline="") as source:
             rows = analyze(parse_orders(source), as_of)
+        if args.suppress_csv:
+            with open(args.suppress_csv, encoding="utf-8-sig", newline="") as source:
+                suppressed = read_suppression_csv(source)
+            rows = exclude_suppressed(rows, suppressed)
         with open(args.output, "w", encoding="utf-8", newline="") as out:
             write_report(rows, out)
         print(f"Wrote {len(rows)} account review rows to {args.output}; no messages sent")
