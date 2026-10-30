@@ -33,7 +33,14 @@ LineVerity doesn't parse scanned PDFs, read XLSX files directly, automatically r
 
 ## Beyond the free tool
 
-The optional **[Supplier Recovery Action Kit](https://lineverity-invoice-review.deed.page/supplier-recovery-kit.html)** is available for **$19 one time**. It contains an editable Excel exception tracker, supplier inquiry drafts, CSV formats, a review SOP and a supplier-response log. The ZIP is delivered **by email within 24 hours of verified payment**, usually sooner—not as an instant download. [Secure Stripe checkout](https://buy.stripe.com/4gMbIU0dobFMdLh6JL7AI00). The current payment statement descriptor is **GROVIABID AI**, the existing authorized merchant account used for LineVerity; this is disclosed before purchase. The free browser checker and CSV templates do not require payment.
+Two optional digital toolkits are available. Both are **one-time purchases**, not subscriptions. Each ZIP is sent **by email within 24 hours of verified payment**, normally sooner—not an instant download.
+
+| Toolkit | Price | Contents | Checkout |
+| --- | ---: | --- | --- |
+| [Supplier Recovery Action Kit](https://lineverity-invoice-review.deed.page/supplier-recovery-kit.html) | $19 | Six-tab Excel case tracker, supplier response log, evidence checklist, worked example, five inquiry drafts, CSV templates and 21-step review SOP | [Secure $19 checkout](https://buy.stripe.com/4gMbIU0dobFMdLh6JL7AI00) |
+| Supplier Price Variance Control Kit | $49 | Offline Excel price-review workbook for up to 250 invoice lines, dashboard, follow-up log, worked example, five supplier correspondence drafts and blank/example CSVs | [Secure $49 checkout](https://buy.stripe.com/cNibIU5xIcJQ9v13xz7AI01) |
+
+The $49 kit is for reviewing agreed-versus-billed supplier unit prices after normalizing currencies and units. Findings require human verification; neither kit guarantees savings, supplier responses or recoveries. Both are delivered to the email address used at checkout. Support and refund requests: [brendenlea05ai@gmail.com](mailto:brendenlea05ai@gmail.com). The current Stripe merchant on the bank statement is **GROVIABID AI**, the existing authorized merchant account used for LineVerity. The free browser checker and CSV templates remain free.
 
 ## Project and contact
 
