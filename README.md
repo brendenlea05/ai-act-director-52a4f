@@ -1,10 +1,21 @@
-# LineVerity
+# LineVerity — Free private reconciliation checkers
 
-A practical, browser-based tool for reviewing supplier invoices against purchase orders and goods received.
+**LIVE refreshed experience:** [LineVerity Statement Matcher](https://lineverity-statement-match-2026.deed.page/) · [Free two-CSV vendor statement reconciliation checker](https://lineverity-statement-match-2026.deed.page/vendor-statement-checker.html) · [Free three-way PO / receipt / invoice checker](https://lineverity-statement-match-2026.deed.page/#app) · [Original $19 supplier kit](https://lineverity-invoice-review.deed.page/supplier-recovery-kit.html)
 
-**[Open the free invoice checker](https://lineverity-invoice-review.deed.page/)** · [Download blank CSV templates](https://lineverity-invoice-review.deed.page/free-invoice-csv-templates.html) · [See the supplier follow-up kit](https://lineverity-invoice-review.deed.page/supplier-recovery-kit.html)
+The old address `https://lineverity-invoice-review.deed.page/` remains accessible for preexisting links and paid-kit customers. The latest changes could **not** overwrite that address because the hosting publisher requires its ownership token. The October 31, 2026 refreshed site is at `https://lineverity-statement-match-2026.deed.page/` and was verified by a successful GitHub Actions public HTTP check (workflow run 41262417455). Do not claim the legacy address contains the new two-file checker.
 
-## What it checks
+## New first-use tool: supplier statement matching
+
+- Input: two CSV exports for **one supplier**, one currency, consistent document cutoff: an AP ledger and a supplier statement.
+- Map document/invoice reference and signed amount columns for each. A fictional sample is included.
+- Flags statement-only references, ledger-only references, amount differences, and ambiguous duplicates; provides downloadable CSV review exceptions.
+- Runs in the browser with **no backend file upload**. Human review is always needed; no bank/ERP integration or proof of savings/payments.
+- Requires normalizing sign conventions, amounts, date cutoffs, credits, payment states and currencies in advance. No direct PDF/XLSX ingestion.
+- Implementation is self-contained `vendor-statement-checker.html` using browser-native JavaScript. In the fictional example 5 unique normalized references produced 2 matched references and 3 review exceptions.
+
+### Existing three-way check, still free
+
+## What the existing three-way checker checks
 
 The tool compares three CSV exports at the purchase-order and SKU level:
 
@@ -20,7 +31,7 @@ It highlights higher billed unit prices, invoiced quantities greater than receiv
 
 ## Try it in a minute
 
-1. Open the [LineVerity checker](https://lineverity-invoice-review.deed.page/#app).
+1. Open the [LineVerity checker](https://lineverity-statement-match-2026.deed.page/#app).
 2. Click **Load example data** for an entirely fictional demonstration, or select three CSV exports.
 3. Confirm the suggested column mapping and choose a unit-price tolerance.
 4. Compare the files and download a report or supplier review packet.
@@ -57,4 +68,4 @@ Source files contain no production customer invoices or paid-kit download archiv
 
 Support: [brendenlea05ai@gmail.com](mailto:brendenlea05ai@gmail.com). Please don't send confidential supplier invoices or sensitive financial documents by email.
 
-[Privacy](https://lineverity-invoice-review.deed.page/privacy.html) · [Beta terms](https://lineverity-invoice-review.deed.page/terms.html)
+[Privacy](https://lineverity-statement-match-2026.deed.page/privacy.html) · [Beta terms](https://lineverity-invoice-review.deed.page/terms.html)
