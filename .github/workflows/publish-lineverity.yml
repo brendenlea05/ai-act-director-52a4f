@@ -22,7 +22,7 @@ jobs:
           mkdir -p "$RUNNER_TEMP/lineverity-public"
           cp index.html app.js engine.js packet.js brand.css favicon.svg privacy.html terms.html supplier-recovery-kit.html free-invoice-csv-templates.html vendor-statement-checker.html robots.txt sitemap.xml 404.html "$RUNNER_TEMP/lineverity-public/"
           cp -R guides templates "$RUNNER_TEMP/lineverity-public/"
-          find "$RUNNER_TEMP/lineverity-public" -type f \( -name '*.html' -o -name '*.xml' -o -name '*.txt' \) -print0 | xargs -0 sed -i 's|https://earnest-sprite-f58253.netlify.app|https://lineverity-invoice-review.deed.page|g'
+          find "$RUNNER_TEMP/lineverity-public" -type f \( -name '*.html' -o -name '*.xml' -o -name '*.txt' \) -print0 | xargs -0 sed -i -e 's|https://earnest-sprite-f58253.netlify.app|https://lineverity-statement-match-2026.deed.page|g' -e 's|https://lineverity-invoice-review.deed.page|https://lineverity-statement-match-2026.deed.page|g'
           tar -C "$RUNNER_TEMP/lineverity-public" -czf "$RUNNER_TEMP/lineverity.tar.gz" .
           size=$(stat -c '%s' "$RUNNER_TEMP/lineverity.tar.gz")
           echo "Site bundle prepared ($size bytes)."
@@ -30,7 +30,7 @@ jobs:
       - name: Publish website and encrypt site ownership token
         shell: bash
         env:
-          SITE_SLUG: lineverity-invoice-review
+          SITE_SLUG: lineverity-statement-match-2026
         run: |
           set -euo pipefail
           umask 077
@@ -44,7 +44,7 @@ jobs:
           import json, os
           root=os.environ["RUNNER_TEMP"]
           data=json.load(open(root+"/publish-response.json",encoding="utf-8"))
-          assert data.get("ok") is True and str(data.get("url","")).startswith("https://lineverity-invoice-review.deed.page/"), "Hosted site URL was not confirmed"
+          assert data.get("ok") is True and str(data.get("url","")).startswith("https://lineverity-statement-match-2026.deed.page/"), "Hosted site URL was not confirmed"
           tok=data.get("token")
           assert isinstance(tok,str) and tok.startswith("deed_tok_"), "New site ownership token missing; refusing to overwrite ownership key"
           with open(root+"/site-token-raw","w",encoding="utf-8") as f: f.write(tok)
@@ -55,7 +55,7 @@ jobs:
           base64 -w0 "$RUNNER_TEMP/site-token.bin" > .github/hosting/deed-token.enc.b64
           printf '\n' >> .github/hosting/deed-token.enc.b64
           rm -f "$RUNNER_TEMP/site-token-raw" "$RUNNER_TEMP/publish-response.json" "$RUNNER_TEMP/site-token.bin"
-          printf '%s\n' 'https://lineverity-invoice-review.deed.page/' > LIVE_SITE_URL.txt
+          printf '%s\n' 'https://lineverity-statement-match-2026.deed.page/' > LIVE_SITE_URL.txt
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add LIVE_SITE_URL.txt .github/hosting/deed-token.enc.b64
@@ -65,7 +65,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          url='https://lineverity-invoice-review.deed.page/'
+          url='https://lineverity-statement-match-2026.deed.page/'
           for i in 1 2 3 4 5; do
             status=$(curl --max-time 20 -s -o "$RUNNER_TEMP/public-site.html" -w '%{http_code}' "$url" || true)
             if [[ "$status" == 200 ]] && grep -q 'LineVerity' "$RUNNER_TEMP/public-site.html"; then
