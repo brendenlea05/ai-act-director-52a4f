@@ -20,7 +20,7 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/lineverity-public"
-          cp index.html app.js engine.js packet.js brand.css favicon.svg privacy.html terms.html supplier-recovery-kit.html free-invoice-csv-templates.html robots.txt sitemap.xml 404.html "$RUNNER_TEMP/lineverity-public/"
+          cp index.html app.js engine.js packet.js brand.css favicon.svg privacy.html terms.html supplier-recovery-kit.html free-invoice-csv-templates.html vendor-statement-checker.html robots.txt sitemap.xml 404.html "$RUNNER_TEMP/lineverity-public/"
           cp -R guides templates "$RUNNER_TEMP/lineverity-public/"
           find "$RUNNER_TEMP/lineverity-public" -type f \( -name '*.html' -o -name '*.xml' -o -name '*.txt' \) -print0 | xargs -0 sed -i 's|https://earnest-sprite-f58253.netlify.app|https://lineverity-invoice-review.deed.page|g'
           tar -C "$RUNNER_TEMP/lineverity-public" -czf "$RUNNER_TEMP/lineverity.tar.gz" .
