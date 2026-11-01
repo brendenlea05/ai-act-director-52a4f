@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Free Vendor Statement Reconciliation Checker | LineVerity</title>
+<meta name="description" content="Compare a supplier statement CSV against your accounts-payable ledger CSV, flag missing documents, amount differences and duplicate references. Free, private, browser-local.">
+<link rel="canonical" href="https://lineverity-invoice-review.deed.page/vendor-statement-checker.html">
+<style>
+:root{font-family:system-ui,-apple-system,Segoe UI,sans-serif;color-scheme:dark;background:#091522;color:#eff6fa}*{box-sizing:border-box}body{margin:0;font-size:16px;line-height:1.6}a{color:#a2f5cf}main{max-width:990px;margin:auto;padding:18px 24px 80px}header{display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid #314151;padding:16px 0;gap:14px;flex-wrap:wrap}header a{text-decoration:none}header strong{font-size:23px}nav{display:flex;gap:16px;flex-wrap:wrap;font-size:14px}.tag{border:1px solid #6aaf92;border-radius:99px;padding:7px 13px;display:inline-block;color:#a2f5cf;font-size:12px;font-weight:750;margin-top:48px}h1{font-size:clamp(36px,5vw,62px);line-height:1.08;letter-spacing:-1.9px;margin:24px 0}h2{line-height:1.25;font-size:25px;margin-top:38px}p,.hint{color:#bbcedc}.lead{font-size:19px;max-width:800px}.card{background:#11273a;border:1px solid #325069;border-radius:15px;padding:22px;margin:16px 0}.inputs{display:grid;grid-template-columns:1fr 1fr;gap:16px}.field label,.field strong{display:block;font-size:14px;margin-bottom:9px}.field input{max-width:100%;width:100%}input::file-selector-button,button{font:inherit;border:0;border-radius:9px;padding:11px 17px;background:#9af1d1;color:#09251e;font-weight:750;cursor:pointer}button.secondary,input::file-selector-button{background:#26445b;color:white}.row{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-top:18px}.small{font-size:13px;color:#9db3c2}.warning{border-left:3px solid #f7cb91;background:#3e342b;padding:12px 15px;margin:18px 0;font-size:13px;color:#f5dab1}.hidden{display:none}select{color:#fff;background:#173249;border:1px solid #48647a;padding:9px 12px;border-radius:7px;width:100%}.map{display:grid;grid-template-columns:repeat(2,1fr);gap:16px}.results{margin-top:28px}.metrics{display:flex;gap:12px;flex-wrap:wrap}.metric{background:#142b40;border:1px solid #385266;padding:14px 22px;border-radius:12px;min-width:155px}.metric b{display:block;font-size:26px}.tablewrap{overflow:auto;border:1px solid #37536a;border-radius:12px;margin:18px 0}table{width:100%;border-collapse:collapse;min-width:750px;font-size:13px}th,td{text-align:left;padding:11px 13px;border-bottom:1px solid #314b5e}th{background:#1c394d}td{overflow-wrap:anywhere}.err{color:#ffb69e}footer{border-top:1px solid #314151;padding-top:24px;margin-top:65px;color:#9db3c2;font-size:13px}@media(max-width:650px){.inputs,.map{grid-template-columns:1fr}h1{font-size:38px}}
+</style></head><body><main><header><a href="/"><strong>LineVerity</strong></a><nav><a href="/">PO / invoice checker</a><a href="/free-invoice-csv-templates.html">Free templates</a><a href="/supplier-recovery-kit.html">Optional toolkits</a></nav></header>
+<span class="tag">FREE · NO SIGNUP · NO FILE UPLOADS</span>
+<h1>Which supplier statement lines don't match your AP ledger?</h1>
+<p class="lead">Stop cross-checking invoice references by hand. Compare one supplier's statement against your own open accounts-payable ledger. Spot missing invoices, different amounts and duplicate document numbers, then download a human-review report.</p>
+<div class="warning"><strong>Important:</strong> Use one supplier, one currency and the same date cutoff in both CSV files. Export open items, including credits, using comparable signed amounts. A match is not proof of payment or balance reconciliation. All results require human review.</div>
+<section class="card" aria-label="Private reconciliation tool"><h2 style="margin-top:0">Run a local statement check</h2><p class="small">Files are read in your browser; no data is sent to LineVerity. CSV only, not PDFs or Excel files. Exports need a document reference and an amount column.</p><div class="inputs"><div class="field"><label for="ledger"><strong>1. Your AP ledger CSV</strong></label><input id="ledger" type="file" accept=".csv,text/csv"></div><div class="field"><label for="statement"><strong>2. Supplier statement CSV</strong></label><input id="statement" type="file" accept=".csv,text/csv"></div></div><div class="row"><button id="demo" class="secondary" type="button">Try fictional example</button><button id="sample" class="secondary" type="button">Download sample CSVs</button></div>
+<div id="mapPanel" class="hidden"><h2>Check column mapping</h2><p class="small">Confirm which column contains the invoice/credit reference and which contains the signed amount in each file. Do not match credits to invoices without checking original documents.</p><div class="map">
+<div class="field"><label for="ledgerRef">AP ledger — reference</label><select id="ledgerRef"></select></div><div class="field"><label for="ledgerAmount">AP ledger — signed amount</label><select id="ledgerAmount"></select></div>
+<div class="field"><label for="statementRef">Supplier statement — reference</label><select id="statementRef"></select></div><div class="field"><label for="statementAmount">Supplier statement — signed amount</label><select id="statementAmount"></select></div></div>
+<div class="row"><button id="run" type="button">Compare records →</button></div></div><p id="error" class="err" role="alert"></p></section>
+<section id="results" class="results hidden" aria-live="polite"><h2>Items for human review</h2><div id="metrics" class="metrics"></div><p id="summary" class="small"></p><div class="tablewrap"><table><thead><tr><th>Issue</th><th>Reference</th><th>AP ledger amount</th><th>Supplier statement amount</th><th>Review note</th></tr></thead><tbody id="rows"></tbody></table></div><div class="row"><button id="download" type="button">Download exception CSV</button></div><p class="small">This is a document-reference comparison only. Check credit memos, unapplied payments, duplicate postings, adjustments, timing, opening balances, tax, rounding and foreign currency separately. Never release payments based solely on this output.</p></section>
+<section><h2>Prefer a purchase-order match?</h2><p>Our original <a href="/#app">free three-way CSV checker</a> compares purchase orders, goods receipts and vendor invoices. You can also find <a href="/supplier-recovery-kit.html">optional one-time follow-up workbooks</a>; no purchase is needed for either free checker.</p><h2>What this does not do</h2><p>No QuickBooks, NetSuite or ERP integration; no direct XLSX/PDF support; no automatic writebacks, supplier contact, confirmed savings, verified invoice authenticity or payment authorization. Keep confidential supplier data out of support emails. Questions or feedback: <a href="mailto:brendenlea05ai@gmail.com?subject=LineVerity%20statement%20checker%20feedback">contact LineVerity</a>.</p></section>
+<footer>LineVerity · <a href="/privacy.html">Privacy</a> · <a href="/terms.html">Terms</a> · Independent review tool. GROVIABID AI is the disclosed payment merchant for optional paid products.</footer></main>
+<script>
+(function(){
+"use strict";
+const $=id=>document.getElementById(id), data={ledger:null,statement:null}, issues=[];
+function parseCSV(s){
+ s=s.replace(/^\uFEFF/,"");const rows=[];let row=[],cell="",q=false;
+ for(let i=0;i<s.length;i++){const c=s[i];if(q){if(c==='"'&&s[i+1]==='"'){cell+='"';i++}else if(c==='"'){q=false}else{cell+=c}}
+ else if(c==='"'){if(cell.length===0)q=true;else cell+=c}
+ else if(c===','){row.push(cell);cell=""}
+ else if(c==='\n'||c==='\r'){if(c==='\r'&&s[i+1]==='\n')i++;row.push(cell);if(row.some(x=>x.trim()!==""))rows.push(row);row=[];cell=""}
+ else cell+=c}
+ if(q)throw Error("Unclosed quote in CSV");
+ row.push(cell);if(row.some(x=>x.trim()!==""))rows.push(row);
+ if(rows.length<2)throw Error("CSV must contain a header and at least one data row");
+ if(rows.length>20001)throw Error("Limit: 20,000 data rows per CSV");
+ const heads=rows.shift().map(h=>h.trim());
+ if(new Set(heads.map(h=>h.toLowerCase())).size!==heads.length)throw Error("CSV has duplicate column headers");
+ if(rows.some(r=>r.length!==heads.length))throw Error("CSV row has a different number of columns than the header");
+ return {heads,rows};
+}
+function normRef(s){return String(s??"").trim().toUpperCase().replace(/[\s\-]/g,"")}
+function amount(s){let v=String(s??"").trim();if(!v)return NaN;
+ let negative=/^\(.*\)$/.test(v);if(negative)v=v.slice(1,-1);
+ v=v.replace(/^\$/,"").replace(/,/g,"").trim();if(!/^[+-]?\d+(?:\.\d{1,2})?$/.test(v))return NaN;
+ return Math.round(Number(v)*100)*(negative?-1:1);
+}
+function choose(headers,words){let i=headers.findIndex(h=>words.some(w=>h.toLowerCase().replace(/[^a-z0-9]/g,"")===w));if(i<0)i=headers.findIndex(h=>words.some(w=>h.toLowerCase().replace(/[^a-z0-9]/g,"").includes(w)));return Math.max(0,i)}
+function renderMap(){if(!data.ledger||!data.statement)return;
+ for(const [key,name] of [["ledger","ledger"],["statement","statement"]]){
+ const hs=data[key].heads;
+ for(const [field,words] of [["Ref",["invoicenumber","invoiceno","documentnumber","documentno","documentreference","reference","ref","invoice","document","transactionid"]],["Amount",["openamount","outstandingamount","amount","balance","signedamount","netamount","total"]]]){
+ const sel=$(key+field);sel.textContent="";hs.forEach((h,i)=>{let op=document.createElement("option");op.value=String(i);op.textContent=h;sel.appendChild(op)});sel.selectedIndex=choose(hs,words)}
+ }
+ $("mapPanel").classList.remove("hidden");$("results").classList.add("hidden");$("error").textContent="";
+}
+function load(which,file){if(!file)return;if(file.size>4000000){$("error").textContent="Each CSV must be 4 MB or smaller.";return}file.text().then(t=>{data[which]=parseCSV(t);renderMap()}).catch(e=>{$("error").textContent=e.message})}
+$("ledger").addEventListener("change",e=>load("ledger",e.target.files[0]));
+$("statement").addEventListener("change",e=>load("statement",e.target.files[0]));
+function rowsToCSV(rows){return rows.map(r=>r.map(v=>'"'+String(v??"").replace(/"/g,'""')+'"').join(",")).join("\r\n")+"\r\n"}
+function dl(name,text){const url=URL.createObjectURL(new Blob([text],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000)}
+const sampleLedger="invoice_number,open_amount\nINV-100,125.00\nINV-101,80.00\nINV-102,62.50\nCM-99,-25.00\n";
+const sampleStatement="invoice_number,balance\nINV-100,125.00\nINV-101,85.00\nINV-103,40.00\nCM-99,-25.00\n";
+$("demo").onclick=()=>{data.ledger=parseCSV(sampleLedger);data.statement=parseCSV(sampleStatement);renderMap()};
+$("sample").onclick=()=>{dl("sample-ap-ledger.csv",sampleLedger);setTimeout(()=>dl("sample-supplier-statement.csv",sampleStatement),300)};
+function format(v){return v===null?"—":(v<0?"-":"")+"$"+(Math.abs(v)/100).toFixed(2)}
+function recordset(which){const d=data[which],ref=Number($(which+"Ref").value),amt=Number($(which+"Amount").value),m=new Map();let invalid=0;
+ if(ref===amt)throw Error("Reference and amount must be different columns in "+which);
+ for(const row of d.rows){const raw=row[ref].trim(),key=normRef(raw),cents=amount(row[amt]);if(!key||!Number.isFinite(cents)){invalid++;continue}
+ if(!m.has(key))m.set(key,[]);m.get(key).push({raw,cents})}
+ return {m,invalid};
+}
+function add(code,reference,ledger,statement,note){issues.push([code,reference,ledger===null?"":format(ledger),statement===null?"":format(statement),note])}
+$("run").onclick=()=>{try{
+ const L=recordset("ledger"),S=recordset("statement");issues.length=0;let matched=0,dups=0;
+ const keys=new Set([...L.m.keys(),...S.m.keys()]);
+ for(const key of keys){const la=L.m.get(key)||[],sa=S.m.get(key)||[],label=(sa[0]||la[0]).raw;
+ if(la.length>1||sa.length>1){dups++;add("DUPLICATE REFERENCE",label,null,null,"Ledger rows: "+la.length+"; statement rows: "+sa.length+"; inspect each posting");continue}
+ if(!la.length){add("STATEMENT ONLY",label,null,sa[0].cents,"Not found in AP ledger; review missing posting, cutoff or settled item");continue}
+ if(!sa.length){add("LEDGER ONLY",label,la[0].cents,null,"Not found on supplier statement; review timing, payment or credit memo");continue}
+ if(la[0].cents!==sa[0].cents){add("AMOUNT DIFFERENCE",label,la[0].cents,sa[0].cents,"Check partial payment, tax, credit, unit and cutoff; signed difference: "+format(sa[0].cents-la[0].cents));continue}
+ matched++;
+ }
+ const invalid=L.invalid+S.invalid;
+ if(invalid)add("UNREADABLE ROWS","",null,null,invalid+" row(s) skipped due to blank reference or unrecognized amount; fix exports and rerun");
+ $("metrics").textContent="";for(const [name,n] of [["Matching references",matched],["Exceptions",issues.length],["Duplicate references",dups],["Skipped rows",invalid]]){const div=document.createElement("div");div.className="metric";const b=document.createElement("b");b.textContent=n;const small=document.createElement("span");small.className="small";small.textContent=name;div.append(b,small);$("metrics").appendChild(div)}
+ $("rows").textContent="";for(const issue of issues){const tr=document.createElement("tr");for(const v of issue){const td=document.createElement("td");td.textContent=v;tr.appendChild(td)}$("rows").appendChild(tr)}
+ if(!issues.length){const tr=document.createElement("tr"),td=document.createElement("td");td.colSpan=5;td.textContent="No document-reference differences detected. This does not establish that balances or payments reconcile.";tr.appendChild(td);$("rows").appendChild(tr)}
+ $("summary").textContent="Compared "+keys.size+" unique normalized references. Reference normalization ignores whitespace and hyphens and uppercases letters; ambiguous duplicates are never auto-matched. No data was uploaded.";
+ $("results").classList.remove("hidden");$("error").textContent="";$("results").scrollIntoView({behavior:"smooth",block:"start"});
+ }catch(e){$("error").textContent=e.message}};
+$("download").onclick=()=>dl("lineverity-statement-exceptions.csv",rowsToCSV([["issue","reference","ap_ledger_amount","supplier_statement_amount","review_note"],...issues]));
+})();
+</script></body></html>
